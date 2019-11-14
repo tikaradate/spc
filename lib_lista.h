@@ -1,18 +1,22 @@
-/*
-  Feito por Marcos Castiho para a disciplina CI1001 - Programacao I
-  Em 18/10/2019.
-  Define a estrutura de dados para o Tipo Abstrato de Dados Lista
-  como sendo uma lista duplamente encadeada com sentinelas no inicio
-  e no final. A cabeca da lista tem ponteiros para o inicio, fim e
-  para um elemento qualquer da lista, alem do tamanho da lista.
-  Contem os prototipos publicos das funcoes que manipulam o TAD.
-*/
+struct t_coord {
+	int x;
+	int y;
+};
+
+typedef struct t_coord t_coord;
 
 struct t_nodo {
-    int chave;
-    struct t_nodo *prox;
     struct t_nodo *prev;
+    struct t_nodo *prox;
+	t_coord pos;
+	union {					/* uso de union para ter ou o estado, ou um uso de lista de listas */
+		int estado;
+		t_lista col;
+	} u;
+	int tipo;
+	char *corpo;
 };
+
 typedef struct t_nodo t_nodo;
 
 struct t_lista {
@@ -21,6 +25,7 @@ struct t_lista {
     t_nodo *fim;
     int tamanho;
 };
+
 typedef struct t_lista t_lista;
 
 /*
