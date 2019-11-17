@@ -11,10 +11,10 @@ struct t_nodo {
 	t_coord pos;
 	union {					/* uso de union para ter ou o estado, ou um uso de lista de listas */
 		int estado;
-		t_lista col;
+		struct t_lista *col;
 	} u;
 	int tipo;
-	char *corpo;
+	char corpo[3][6];
 };
 
 typedef struct t_nodo t_nodo;
@@ -48,7 +48,7 @@ void destroi_lista(t_lista *l);
   Insere o elemento item no início da lista.
   Retorna 1 se a operação foi bem sucedida e zero caso contrário.
 */
-int insere_inicio_lista(int item, t_lista *l);
+int insere_inicio_lista(int item, int tipo, t_coord pos, t_lista *l);
 
 /*
   Retorna o tamanho da lista em *tam.
@@ -60,14 +60,14 @@ int tamanho_lista(int *tam, t_lista *l);
   Insere o elemento item no final da lista.
   Retorna 1 se a operação foi bem sucedida e zero caso contrário.
 */
-int insere_fim_lista(int item, t_lista *l);
+int insere_fim_lista(int item, int tipo, t_coord pos, t_lista *l);
 
 /*
   Insere o elemento item na lista de maneira que ela fique em ordem
   crescente, do início para o final dela.
   Retorna 1 se a operação foi bem sucedida e zero caso contrário.
 */
-int insere_ordenado_lista(int item, t_lista *l);
+int insere_ordenado_lista(int item, int tipo, t_coord pos, t_lista *l);
 
 /*
   Remove o primeiro elemento da lista e o retorna em *item.
