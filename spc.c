@@ -5,14 +5,14 @@
 #include <stdlib.h>
 #include "lib_lista.h"
 
-#define VIVO 2
+#define VIVO     2
 #define MORRENDO 1
-#define MORTO 0
+#define MORTO    0
 
 #define ALI_COL 11
-#define ALI_LIN 5
+#define ALI_LIN  5
 
-#define MIN_Y 38
+#define MIN_Y  38
 #define MIN_X 100
 
 #define ALIEN    100
@@ -27,7 +27,8 @@
 
 #define BAR_ALT  3
 #define BAR_LARG 7
-#define QNT_BAR 4
+#define QNT_BAR  4
+
 void desenha_item(t_nodo *);
 void inicia_sprite(t_nodo *);
 void move_item(int sentido, t_nodo *);
@@ -82,10 +83,26 @@ void inicializa_barreiras(t_lista *barreiras){
 }
 void desenha_item(t_nodo *item){
 	int i;
-	for(i = 0; i < 3; i++){
-		mvprintw(item->pos.y + i, item->pos.x, item->corpo[i]);
- 	}
+	switch(item->tipo){
+		case ALIEN:
+			for(i = 0; i < 3; i++){
+				mvprintw(item->pos.y + i, item->pos.x, item->corpo[i]);
+			}
+			break;
+		case CANHAO:
+			for(i = 0; i < 2; i++){
+				mvprintw(item->pos.y + i, item->pos.x, item->corpo[i]);
+			}
+			break;
+		case TIRO:
+			mvprintw(item->pos.y, item->pos.x, item->corpo[0]);
+			break;
+		case BARREIRA:
+			mvprintw(item->pos.y, item->pos.x, item->corpo[0]);
+	}
+
 }
+
 
 void inicia_sprite(t_nodo *item){
 	switch(item->tipo){
@@ -95,7 +112,7 @@ void inicia_sprite(t_nodo *item){
 			strcpy(item->corpo[2], "MMMMM");
 			break;
 		case CANHAO:
-			strcpy(item->corpo[0], " vUv ");
+			strcpy(item->corpo[0], " v~v ");
 			strcpy(item->corpo[1], "mmmmm");
 			break;
 		case TIRO:
@@ -143,9 +160,11 @@ void move_aliens(int *direcao, t_lista *aliens){
 
 	inicializa_atual_inicio(aliens);
 	vert = 0;
-	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1 < 0 ||
-	   aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X- 5){
-		*direcao *= -1;  /* inverte sentido do movimento horizontal */
+	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1 < 0){
+		*direcao = DIREI;  /* inverte sentido do movimento horizontal */
+		vert = BAIXO;
+	} else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X- 5){
+		*direcao = ESQUE;
 		vert = BAIXO;
 	}
 
@@ -246,7 +265,7 @@ void move_canhao(t_lista *canhao, t_lista *tiro){
 	}
 }
 
-void detecta_colisoes(t_lista *tiro, t_lista *aliens){
+void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 	int i, j, k;
 
 	inicializa_atual_inicio(tiro);
@@ -270,6 +289,26 @@ void detecta_colisoes(t_lista *tiro, t_lista *aliens){
 		}
 		incrementa_atual(tiro);
 	}
+
+	inicializa_atual_inicio(tiro);
+	for(i = 0; i < tiro->tamanho; i++){
+
+		inicializa_atual_inicio(barreiras);
+		for(j = 0; j < barreiras->tamanho; j++){
+
+			inicializa_atual_inicio(barreiras->atual->u.col);
+			for(k = 0; k < barreiras->atual->u.col->tamanho; k++){
+				if(tiro->atual->pos.x == barreiras->atual->u.col->atual->pos.x &&
+				   tiro->atual->pos.y == barreiras->atual->u.col->atual->pos.y){
+					tiro->atual->u.estado = MORTO;
+					barreiras->atual->u.col->atual->u.estado = MORTO;
+				}
+				incrementa_atual(barreiras->atual->u.col);
+			}
+			incrementa_atual(barreiras);
+		}
+		incrementa_atual(tiro);
+	}
 }
 
 void remove_tiro(t_lista *tiro){
@@ -286,6 +325,28 @@ void remove_tiro(t_lista *tiro){
 			incrementa_atual(tiro);
 		}
 	}	
+}
+
+void remove_barreiras(t_lista *barreiras){
+	int i, j, lixo;
+	t_nodo *aux;
+
+	inicializa_atual_inicio(barreiras);
+	for(i = 0; i < barreiras->tamanho; i++){
+
+		inicializa_atual_inicio(barreiras->atual->u.col);
+		for(j = 0; j < barreiras->atual->u.col->tamanho; j++){
+			if(barreiras->atual->u.col->atual->u.estado == MORTO){
+				aux = barreiras->atual->u.col->atual->prox;
+				remove_item_atual(&lixo, barreiras->atual->u.col);
+				barreiras->atual->u.col->atual = aux;
+			} else {
+				incrementa_atual(barreiras->atual->u.col);
+			}
+		}
+
+		incrementa_atual(barreiras);
+	}
 }
 
 void remove_aliens(t_lista *aliens){
@@ -316,16 +377,16 @@ void remove_aliens(t_lista *aliens){
 }
 
 
-void remove_morto(t_lista *tiro, t_lista *aliens){
+void remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 	remove_tiro(tiro);
 	remove_aliens(aliens);
+	remove_barreiras(barreiras);
 }
 
 int main() {
 	int x_term, y_term;
 	int dir, cont;
 	t_lista aliens, canhao, tiro, barreiras;
-
 	initscr();              /* inicia a tela */
 	getmaxyx(stdscr, y_term, x_term);
 	if(y_term < 38 || x_term < 100){
@@ -347,7 +408,7 @@ int main() {
 	dir = DIREI;
 	cont = 0;
 	while(1){
-		clear();
+		erase();
 		
 		if(cont % 10 == 0){
 			move_aliens(&dir, &aliens);
@@ -359,13 +420,14 @@ int main() {
 			move_tiro(&tiro);
 		}
 		
-		detecta_colisoes(&tiro, &aliens);
-		remove_morto(&tiro, &aliens);
+		detecta_colisoes(&tiro, &aliens, &barreiras);
+		remove_morto(&tiro, &aliens, &barreiras);
 		desenha_tiro(&tiro);
 		desenha_aliens(&aliens);
 		desenha_canhao(&canhao);
 		desenha_barreiras(&barreiras);
 		refresh();
+
 		cont++;
 		if(cont > 10)
 			cont = 0;
