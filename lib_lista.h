@@ -14,7 +14,10 @@ struct t_nodo {
 		struct t_lista *col;
 	} u;
 	int tipo;
-	char corpo[3][6];
+
+	int spr_alt;
+	int alterna;
+	char corpo[2][3][6];
 };
 
 typedef struct t_nodo t_nodo;

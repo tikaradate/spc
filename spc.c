@@ -83,43 +83,39 @@ void inicializa_barreiras(t_lista *barreiras){
 }
 void desenha_item(t_nodo *item){
 	int i;
-	switch(item->tipo){
-		case ALIEN:
-			for(i = 0; i < 3; i++){
-				mvprintw(item->pos.y + i, item->pos.x, item->corpo[i]);
-			}
-			break;
-		case CANHAO:
-			for(i = 0; i < 2; i++){
-				mvprintw(item->pos.y + i, item->pos.x, item->corpo[i]);
-			}
-			break;
-		case TIRO:
-			mvprintw(item->pos.y, item->pos.x, item->corpo[0]);
-			break;
-		case BARREIRA:
-			mvprintw(item->pos.y, item->pos.x, item->corpo[0]);
+	for(i = 0; i < item->spr_alt; i++){
+		mvprintw(item->pos.y + i, item->pos.x, item->corpo[item->alterna][i]);
 	}
-
 }
 
 
 void inicia_sprite(t_nodo *item){
+	item->alterna = 0;
 	switch(item->tipo){
 		case ALIEN:
-			strcpy(item->corpo[0], "MMMMM");
-			strcpy(item->corpo[1], "MMMMM");
-			strcpy(item->corpo[2], "MMMMM");
+			item->spr_alt = 3;
+			strcpy(item->corpo[0][0], "MMMMM");
+			strcpy(item->corpo[0][1], "MMMMM");
+			strcpy(item->corpo[0][2], "MMMMM");
+			strcpy(item->corpo[1][0], "MMMMM");
+			strcpy(item->corpo[1][1], "MMMMM");
+			strcpy(item->corpo[1][2], "MMMMM");
 			break;
 		case CANHAO:
-			strcpy(item->corpo[0], " v~v ");
-			strcpy(item->corpo[1], "mmmmm");
+			item->spr_alt = 2;
+			strcpy(item->corpo[0][0], " vVv ");
+			strcpy(item->corpo[0][1], "mmmmm");
+			strcpy(item->corpo[1][0], " VvV ");
+			strcpy(item->corpo[1][1], "nnnnn");
 			break;
 		case TIRO:
-			strcpy(item->corpo[0], "i");
+			item->spr_alt = 1;
+			strcpy(item->corpo[0][0], "i");
 			break;
 		case BARREIRA:
-			strcpy(item->corpo[0], "a");
+			item->spr_alt = 1;
+			strcpy(item->corpo[0][0], "a");
+			break;
 	}
 }
 
@@ -241,17 +237,27 @@ void desenha_canhao(t_lista *canhao){
 	desenha_item(canhao->ini->prox);
 }
 
-void move_canhao(t_lista *canhao, t_lista *tiro){
+void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 	int tecla;
 	t_coord pos_tiro;
 
-	tecla = getch();
+	tecla = wgetch(tela_tecla);
 	if(tecla == KEY_LEFT){
-		if(canhao->ini->prox->pos.x > 0)
+		if(canhao->ini->prox->pos.x > 0){
 			move_item(ESQUE, canhao->ini->prox);
+			if(canhao->ini->prox->alterna == 1)
+				canhao->ini->prox->alterna = 0;
+			else
+				canhao->ini->prox->alterna++;
+		}
 	} else if(tecla == KEY_RIGHT){
-		if(canhao->ini->prox->pos.x < 100 - 5)
+		if(canhao->ini->prox->pos.x < 100 - 5){
 			move_item(DIREI, canhao->ini->prox);
+			if(canhao->ini->prox->alterna == 1)
+				canhao->ini->prox->alterna = 0;
+			else
+				canhao->ini->prox->alterna++;
+		}
 	} else if(tecla == ' '){
 		if(tiro->tamanho < 3){
 			inicializa_atual_inicio(canhao);
@@ -385,11 +391,13 @@ void remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 
 int main() {
 	int x_term, y_term;
-	int dir, cont;
+	int dir, cont, tecla;
 	t_lista aliens, canhao, tiro, barreiras;
+	WINDOW *tela_tecla;
+	
 	initscr();              /* inicia a tela */
 	getmaxyx(stdscr, y_term, x_term);
-	if(y_term < 38 || x_term < 100){
+	if(y_term < MIN_Y || x_term < MIN_X){
 		endwin();
 		printf("Tamanho do terminal insuficiente\nTente pelo menos 38x100\n");
 		return 0;
@@ -397,9 +405,10 @@ int main() {
 
     cbreak();               /* desabilita o buffer de entrada */
     noecho();               /* não mostra os caracteres digitados */
-    nodelay(stdscr, TRUE);  /* faz com que getch não aguarde a digitação */
-    keypad(stdscr, TRUE);   /* permite a leitura das setas */
-    curs_set(FALSE);        /* não mostra o cursor na tela */
+	tela_tecla = newwin(0, 0, 0, 0);
+	nodelay(tela_tecla, TRUE);  /* faz com que getch não aguarde a digitação */
+	keypad(tela_tecla, TRUE);   /* permite a leitura das setas */
+	curs_set(FALSE);        /* não mostra o cursor na tela */
 
 	inicializa_aliens(&aliens);
 	inicializa_canhao(&canhao);
@@ -408,30 +417,31 @@ int main() {
 	dir = DIREI;
 	cont = 0;
 	while(1){
+	
 		erase();
-		
-		if(cont % 10 == 0){
+		move_canhao(&canhao, &tiro, tela_tecla);
+		if(cont % 100 == 0){
 			move_aliens(&dir, &aliens);
 		}
-
-		move_canhao(&canhao, &tiro);
-
-		if(cont % 2 == 0){
+		if(cont % 20 == 0){
 			move_tiro(&tiro);
+			detecta_colisoes(&tiro, &aliens, &barreiras);
+			remove_morto(&tiro, &aliens, &barreiras);
 		}
-		
-		detecta_colisoes(&tiro, &aliens, &barreiras);
-		remove_morto(&tiro, &aliens, &barreiras);
+	
+			
 		desenha_tiro(&tiro);
-		desenha_aliens(&aliens);
 		desenha_canhao(&canhao);
+		desenha_aliens(&aliens);
 		desenha_barreiras(&barreiras);
+		if(cont % 5 == 0){
+		}
 		refresh();
 
 		cont++;
-		if(cont > 10)
+		if(cont > 100)
 			cont = 0;
-		usleep(20000);
+		usleep(2000);
 	}
 }
 
