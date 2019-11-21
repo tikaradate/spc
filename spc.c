@@ -1,3 +1,4 @@
+#include <time.h>
 #include <stdio.h>
 #include <curses.h>
 #include <unistd.h>
@@ -19,6 +20,7 @@
 #define BARREIRA 200
 #define CANHAO   300
 #define TIRO     400
+#define BOMBA    500
 
 #define ESQUE -1
 #define DIREI  1
@@ -50,9 +52,9 @@ void inicializa_aliens(t_lista *aliens){
 
 		pos.y = 5;
 		for(j = 0; j < ALI_LIN; j++){
-				insere_fim_lista(VIVO, ALIEN, pos, aliens->atual->u.col);
-				inicia_sprite(aliens->atual->u.col->fim->prev);
-				pos.y += 4; 
+			insere_fim_lista(VIVO, ALIEN, pos, aliens->atual->u.col);
+			inicia_sprite(aliens->atual->u.col->fim->prev);
+			pos.y += 4; 
 		}
 		pos.x += 6;
 	}
@@ -61,7 +63,7 @@ void inicializa_aliens(t_lista *aliens){
 void inicializa_barreiras(t_lista *barreiras){
 	int i, j, k;
 	t_coord pos;
-	
+
 	inicializa_lista(barreiras);
 	pos.x = 20;
 	for(i = 0; i < QNT_BAR; i++){
@@ -104,9 +106,9 @@ void inicia_sprite(t_nodo *item){
 		case CANHAO:
 			item->spr_alt = 2;
 			strcpy(item->corpo[0][0], " vVv ");
-			strcpy(item->corpo[0][1], "mmmmm");
+			strcpy(item->corpo[0][1], "NnNnN");
 			strcpy(item->corpo[1][0], " VvV ");
-			strcpy(item->corpo[1][1], "nnnnn");
+			strcpy(item->corpo[1][1], "nNnNn");
 			break;
 		case TIRO:
 			item->spr_alt = 1;
@@ -115,6 +117,11 @@ void inicia_sprite(t_nodo *item){
 		case BARREIRA:
 			item->spr_alt = 1;
 			strcpy(item->corpo[0][0], "a");
+			break;
+		case BOMBA:
+			item->spr_alt = 1;
+			strcpy(item->corpo[0][0], "*");
+			strcpy(item->corpo[1][0], "0");
 			break;
 	}
 }
@@ -137,7 +144,7 @@ void desenha_barreiras(t_lista *barreiras){
 
 void desenha_aliens(t_lista *aliens){
 	int i, j;
-	
+
 	inicializa_atual_inicio(aliens);
 	for(i = 0; i < aliens->tamanho; i++){
 		inicializa_atual_inicio(aliens->atual->u.col);	
@@ -151,24 +158,36 @@ void desenha_aliens(t_lista *aliens){
 	}
 }
 
-void move_aliens(int *direcao, t_lista *aliens){
-	int vert, i, j;
+void move_aliens(int *direcao, t_lista *aliens, t_lista *bombas){
+	int vert, i, j, r;
+	t_coord pos_bomba;
 
 	inicializa_atual_inicio(aliens);
 	vert = 0;
-	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1 < 0){
+	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1< 0){
 		*direcao = DIREI;  /* inverte sentido do movimento horizontal */
 		vert = BAIXO;
-	} else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X- 5){
+	} 
+	else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X - 5){
 		*direcao = ESQUE;
 		vert = BAIXO;
 	}
 
 	for(i = 0; i < aliens->tamanho; i++){
 		inicializa_atual_inicio(aliens->atual->u.col);	
-			for(j = 0; j < aliens->atual->u.col->tamanho; j++){
+		for(j = 0; j < aliens->atual->u.col->tamanho; j++){
 			move_item(*direcao, aliens->atual->u.col->atual);
 			move_item(vert, aliens->atual->u.col->atual);
+			r = rand() % 10;
+			if((r > 8) && (bombas->tamanho < 10)){		
+				pos_bomba = aliens->atual->u.col->atual->pos;
+				pos_bomba.x += 2;
+				pos_bomba.y += 3;
+				insere_fim_lista(VIVO, BOMBA, pos_bomba, bombas);
+				inicializa_atual_fim(bombas);
+				inicia_sprite(bombas->atual);
+			}
+
 			incrementa_atual(aliens->atual->u.col);
 		}
 		incrementa_atual(aliens);
@@ -177,18 +196,18 @@ void move_aliens(int *direcao, t_lista *aliens){
 
 void move_item(int sentido, t_nodo *item){
 	switch(sentido){
-	case DIREI:
-		item->pos.x++;
-		break;
-	case ESQUE:
-		item->pos.x--;
-		break;
-	case BAIXO:
-		item->pos.y++;
-		break;
-	case CIMA:
-		item->pos.y--;
-		break;
+		case DIREI:
+			item->pos.x++;
+			break;
+		case ESQUE:
+			item->pos.x--;
+			break;
+		case BAIXO:
+			item->pos.y++;
+			break;
+		case CIMA:
+			item->pos.y--;
+			break;
 	}
 }
 
@@ -198,7 +217,7 @@ void inicializa_tiro(t_lista *tiro){
 
 void desenha_tiro(t_lista *tiro){
 	int i;
-	
+
 	inicializa_atual_inicio(tiro);
 	for(i = 0; i < tiro->tamanho; i++){
 		if(tiro->atual->u.estado == VIVO){
@@ -208,10 +227,23 @@ void desenha_tiro(t_lista *tiro){
 	}
 }
 
+void desenha_bombas(t_lista *bombas){
+	int i;
+
+	inicializa_atual_inicio(bombas);
+	for(i = 0; i < bombas->tamanho; i++){
+		if(bombas->atual->u.estado == VIVO){
+			desenha_item(bombas->atual);
+			incrementa_atual(bombas);
+		}
+	}
+}
+
+
 void move_tiro(t_lista *tiro){
 	if(!lista_vazia(tiro)){
 		int i, aux;
-		
+
 		inicializa_atual_inicio(tiro);
 		for(i = 0; i < tiro->tamanho; i++){
 			move_item(CIMA, tiro->atual);
@@ -221,6 +253,24 @@ void move_tiro(t_lista *tiro){
 		if(tiro->atual->pos.y < 0)
 			remove_fim_lista(&aux, tiro);
 	}
+}
+
+void move_bombas(t_lista *bombas){
+	if(!lista_vazia(bombas)){
+		int i, aux;
+
+		inicializa_atual_inicio(bombas);
+		for(i = 0; i < bombas->tamanho; i++){
+			move_item(BAIXO, bombas->atual);
+			if(bombas->atual->pos.y > MIN_Y)
+				bombas->atual->u.estado = MORTO;
+			incrementa_atual(bombas);
+		}
+	}
+}
+
+void inicializa_bombas(t_lista *bombas){
+	inicializa_lista(bombas);	
 }
 
 void inicializa_canhao(t_lista *canhao){
@@ -245,10 +295,7 @@ void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 	if(tecla == KEY_LEFT){
 		if(canhao->ini->prox->pos.x > 0){
 			move_item(ESQUE, canhao->ini->prox);
-			if(canhao->ini->prox->alterna == 1)
-				canhao->ini->prox->alterna = 0;
-			else
-				canhao->ini->prox->alterna++;
+			canhao->ini->prox->alterna = (canhao->ini->prox->alterna + 1) % 2;
 		}
 	} else if(tecla == KEY_RIGHT){
 		if(canhao->ini->prox->pos.x < 100 - 5){
@@ -271,7 +318,7 @@ void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 	}
 }
 
-void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
+void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas, t_lista *canhao){
 	int i, j, k;
 
 	inicializa_atual_inicio(tiro);
@@ -284,7 +331,7 @@ void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 			for(k = 0; k < aliens->atual->u.col->tamanho; k++){
 				if(tiro->atual->pos.x >= aliens->atual->u.col->atual->pos.x &&
 				   tiro->atual->pos.x <= aliens->atual->u.col->atual->pos.x + 4 &&
-				   tiro->atual->pos.y >= aliens->atual->u.col->atual->pos.y &&
+		  		   tiro->atual->pos.y >= aliens->atual->u.col->atual->pos.y &&
 				   tiro->atual->pos.y <= aliens->atual->u.col->atual->pos.y + 2){
 					tiro->atual->u.estado = MORTO;
 					aliens->atual->u.col->atual->u.estado = MORTO;
@@ -296,6 +343,7 @@ void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 		incrementa_atual(tiro);
 	}
 
+/* tiro com barreira */
 	inicializa_atual_inicio(tiro);
 	for(i = 0; i < tiro->tamanho; i++){
 
@@ -314,6 +362,75 @@ void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
 			incrementa_atual(barreiras);
 		}
 		incrementa_atual(tiro);
+	}
+
+/* tiro com bombas */
+	inicializa_atual_inicio(tiro);
+	for(i = 0; i < tiro->tamanho; i++){
+
+		inicializa_atual_inicio(bombas);
+		for(j = 0; j < bombas->tamanho; j++){
+			
+			if(tiro->atual->pos.x == bombas->atual->pos.x &&
+			   tiro->atual->pos.y == bombas->atual->pos.y){  
+				tiro->atual->u.estado = MORTO;
+				bombas->atual->u.estado = MORTO;
+			}
+			incrementa_atual(bombas);
+		}
+		incrementa_atual(tiro);
+	}
+
+/* bombas com barreiras */
+
+	inicializa_atual_inicio(bombas);
+	for(i = 0; i < bombas->tamanho; i++){
+
+		inicializa_atual_inicio(barreiras);
+		for(j = 0; j < barreiras->tamanho; j++){
+
+			inicializa_atual_inicio(barreiras->atual->u.col);
+			for(k = 0; k < barreiras->atual->u.col->tamanho; k++){
+				if(bombas->atual->pos.x == barreiras->atual->u.col->atual->pos.x &&
+				   bombas->atual->pos.y == barreiras->atual->u.col->atual->pos.y){
+					bombas->atual->u.estado = MORTO;
+					barreiras->atual->u.col->atual->u.estado = MORTO;
+				}
+				incrementa_atual(barreiras->atual->u.col);
+			}
+			incrementa_atual(barreiras);
+		}
+		incrementa_atual(bombas);
+	}
+/* bomba com jogador */
+
+	inicializa_atual_inicio(bombas);
+	inicializa_atual_inicio(canhao);
+	for(i = 0; i < bombas->tamanho; i++){
+		if(bombas->atual->pos.x >= canhao->atual->pos.x &&
+		   bombas->atual->pos.x <= canhao->atual->pos.x + 4 &&
+		   bombas->atual->pos.y >= canhao->atual->pos.y &&
+		   bombas->atual->pos.y <= canhao->atual->pos.y + 1 ){
+			bombas->atual->u.estado = MORTO;
+			canhao->atual->u.estado = MORTO;
+		}
+		incrementa_atual(bombas);
+	}
+}
+
+void remove_bombas(t_lista *bombas){
+	int i, lixo;
+	t_nodo *aux;
+
+	inicializa_atual_inicio(bombas);
+	for(i = 0; i < bombas->tamanho; i++){
+		if(bombas->atual->u.estado == MORTO){
+			aux = bombas->atual->prox;
+			remove_item_atual(&lixo, bombas);
+			bombas->atual = aux;
+		} else {
+			incrementa_atual(bombas);
+		}
 	}
 }
 
@@ -375,7 +492,7 @@ void remove_aliens(t_lista *aliens){
 
 		incrementa_atual(aliens);
 	}
-	
+
 	if(aliens->ini->prox->u.col->tamanho == 0)
 		remove_inicio_lista(&lixo, aliens);
 	if(aliens->fim->prev->u.col->tamanho == 0)
@@ -383,18 +500,19 @@ void remove_aliens(t_lista *aliens){
 }
 
 
-void remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras){
+void remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas){
 	remove_tiro(tiro);
 	remove_aliens(aliens);
 	remove_barreiras(barreiras);
+	remove_bombas(bombas);
 }
 
 int main() {
 	int x_term, y_term;
 	int dir, cont, tecla;
-	t_lista aliens, canhao, tiro, barreiras;
+	t_lista aliens, canhao, tiro, barreiras, bombas;
 	WINDOW *tela_tecla;
-	
+
 	initscr();              /* inicia a tela */
 	getmaxyx(stdscr, y_term, x_term);
 	if(y_term < MIN_Y || x_term < MIN_X){
@@ -403,45 +521,53 @@ int main() {
 		return 0;
 	}
 
-    cbreak();               /* desabilita o buffer de entrada */
-    noecho();               /* não mostra os caracteres digitados */
+	cbreak();               /* desabilita o buffer de entrada */
+	noecho();               /* não mostra os caracteres digitados */
 	tela_tecla = newwin(0, 0, 0, 0);
 	nodelay(tela_tecla, TRUE);  /* faz com que getch não aguarde a digitação */
 	keypad(tela_tecla, TRUE);   /* permite a leitura das setas */
 	curs_set(FALSE);        /* não mostra o cursor na tela */
 
+	srand(time(NULL));
 	inicializa_aliens(&aliens);
 	inicializa_canhao(&canhao);
 	inicializa_tiro(&tiro);
+	inicializa_bombas(&bombas);
 	inicializa_barreiras(&barreiras);
 	dir = DIREI;
 	cont = 0;
 	while(1){
-	
+
 		erase();
 		move_canhao(&canhao, &tiro, tela_tecla);
-		if(cont % 100 == 0){
-			move_aliens(&dir, &aliens);
+		if(cont % 15 == 0){
+			move_aliens(&dir, &aliens, &bombas);
 		}
-		if(cont % 20 == 0){
+		if(cont % 2 == 0){
 			move_tiro(&tiro);
-			detecta_colisoes(&tiro, &aliens, &barreiras);
-			remove_morto(&tiro, &aliens, &barreiras);
+			move_bombas(&bombas);
 		}
-	
+
 			
+		detecta_colisoes(&tiro, &aliens, &barreiras, &bombas, &canhao);
+		remove_morto(&tiro, &aliens, &barreiras, &bombas);
+		
 		desenha_tiro(&tiro);
+		desenha_bombas(&bombas);
+		desenha_barreiras(&barreiras);
 		desenha_canhao(&canhao);
 		desenha_aliens(&aliens);
 		desenha_barreiras(&barreiras);
-		if(cont % 5 == 0){
+
+		if(canhao.ini->prox->u.estado == MORTO){
+			endwin();
+			printf("amigo vc perdeu, nem tente\n");
+			return 0;
 		}
 		refresh();
 
-		cont++;
-		if(cont > 100)
-			cont = 0;
-		usleep(2000);
+		cont = (cont + 1) % 100;
+		usleep(20000);
 	}
 }
 

@@ -1,0 +1,59 @@
+==3037== Memcheck, a memory error detector
+==3037== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==3037== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==3037== Command: ./a.out
+==3037== Parent PID: 2925
+==3037== 
+==3037== 
+==3037== Process terminating with default action of signal 2 (SIGINT)
+==3037==    at 0x401CCDB: open (open64.c:47)
+==3037==    by 0x4005C06: open_verify.constprop.7 (dl-load.c:1668)
+==3037==    by 0x4006357: open_path (dl-load.c:1980)
+==3037==    by 0x4009188: _dl_map_object (dl-load.c:2220)
+==3037==    by 0x400E311: openaux (dl-deps.c:63)
+==3037==    by 0x401BC6A: _dl_catch_exception (dl-error-skeleton.c:196)
+==3037==    by 0x400E617: _dl_map_object_deps (dl-deps.c:249)
+==3037==    by 0x4003EA5: dl_main (rtld.c:1726)
+==3037==    by 0x401ADCF: _dl_sysdep_start (dl-sysdep.c:253)
+==3037==    by 0x4002127: _dl_start_final (rtld.c:414)
+==3037==    by 0x4002127: _dl_start (rtld.c:521)
+==3037==    by 0x4001097: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==3037== Jump to the invalid address stated on the next line
+==3037==    at 0x556: ???
+==3037==    by 0x4005C06: open_verify.constprop.7 (dl-load.c:1668)
+==3037==    by 0x4006357: open_path (dl-load.c:1980)
+==3037==    by 0x4009188: _dl_map_object (dl-load.c:2220)
+==3037==    by 0x400E311: openaux (dl-deps.c:63)
+==3037==    by 0x401BC6A: _dl_catch_exception (dl-error-skeleton.c:196)
+==3037==    by 0x400E617: _dl_map_object_deps (dl-deps.c:249)
+==3037==    by 0x4003EA5: dl_main (rtld.c:1726)
+==3037==    by 0x401ADCF: _dl_sysdep_start (dl-sysdep.c:253)
+==3037==    by 0x4002127: _dl_start_final (rtld.c:414)
+==3037==    by 0x4002127: _dl_start (rtld.c:521)
+==3037==    by 0x4001097: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==3037==  Address 0x556 is not stack'd, malloc'd or (recently) free'd
+==3037== 
+==3037== 
+==3037== Process terminating with default action of signal 11 (SIGSEGV)
+==3037==  Bad permissions for mapped region at address 0x556
+==3037==    at 0x556: ???
+==3037==    by 0x4005C06: open_verify.constprop.7 (dl-load.c:1668)
+==3037==    by 0x4006357: open_path (dl-load.c:1980)
+==3037==    by 0x4009188: _dl_map_object (dl-load.c:2220)
+==3037==    by 0x400E311: openaux (dl-deps.c:63)
+==3037==    by 0x401BC6A: _dl_catch_exception (dl-error-skeleton.c:196)
+==3037==    by 0x400E617: _dl_map_object_deps (dl-deps.c:249)
+==3037==    by 0x4003EA5: dl_main (rtld.c:1726)
+==3037==    by 0x401ADCF: _dl_sysdep_start (dl-sysdep.c:253)
+==3037==    by 0x4002127: _dl_start_final (rtld.c:414)
+==3037==    by 0x4002127: _dl_start (rtld.c:521)
+==3037==    by 0x4001097: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==3037== 
+==3037== HEAP SUMMARY:
+==3037==     in use at exit: 0 bytes in 0 blocks
+==3037==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+==3037== 
+==3037== All heap blocks were freed -- no leaks are possible
+==3037== 
+==3037== For counts of detected and suppressed errors, rerun with: -v
+==3037== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

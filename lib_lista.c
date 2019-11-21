@@ -57,14 +57,14 @@ void destroi_lista(t_lista *l){
 	l->tamanho = 0;
 }
 
-int insere_inicio_lista(int item, int tipo, t_coord pos, t_lista *l){
+int insere_inicio_lista(int estado, int tipo, t_coord pos, t_lista *l){
 	t_nodo *novo;
 	
 	novo = (t_nodo*) malloc(1 * sizeof(t_nodo));
 	if(novo == NULL)
 		return 0;
 	
-	novo->u.estado = item;
+	novo->u.estado = estado;
 	novo->pos = pos;
 	novo->tipo = tipo;
 	novo->prev = l->ini;
@@ -81,14 +81,14 @@ int tamanho_lista(int *tam, t_lista *l){
 	return 1;
 }
 
-int insere_fim_lista(int item, int tipo, t_coord pos, t_lista *l){
+int insere_fim_lista(int estado, int tipo, t_coord pos, t_lista *l){
 	t_nodo *novo;
 
 	novo = (t_nodo *) malloc(1 * sizeof(t_nodo));
 	if(novo == NULL)
 		return 0;
 
-	novo->u.estado = item;
+	novo->u.estado = estado;
 	novo->pos = pos;
 	novo->tipo = tipo;
 	novo->prev = l->fim->prev;
@@ -100,9 +100,9 @@ int insere_fim_lista(int item, int tipo, t_coord pos, t_lista *l){
 	return 1;
 }
 
-int insere_ordenado_lista(int item, int tipo, t_coord pos, t_lista *l){
+int insere_ordenado_lista(int estado, int tipo, t_coord pos, t_lista *l){
 	if(lista_vazia(l))
-		return(insere_inicio_lista(item, tipo, pos, l));
+		return(insere_inicio_lista(estado, tipo, pos, l));
 			
 	t_nodo *novo;
 
@@ -111,18 +111,18 @@ int insere_ordenado_lista(int item, int tipo, t_coord pos, t_lista *l){
 		return 0;
 
 	/* sentinela */
-	l->fim->u.estado = item;
+	l->fim->u.estado = estado;
 
 	l->atual = l->ini->prox;
-	while(l->atual->u.estado < item)
+	while(l->atual->u.estado < estado)
 		l->atual = l->atual->prox;
 	
 	if(l->atual->prox == NULL){
 		free(novo);
-		return(insere_fim_lista(item, tipo, pos, l));
+		return(insere_fim_lista(estado, tipo, pos, l));
 	}
 			
-	novo->u.estado = item;
+	novo->u.estado = estado;
 	novo->pos = pos;
 	novo->tipo = tipo;
 	novo->prev = l->atual->prev;
@@ -135,13 +135,13 @@ int insere_ordenado_lista(int item, int tipo, t_coord pos, t_lista *l){
 	return 1;
 }
 
-int remove_inicio_lista(int *item, t_lista *l){
+int remove_inicio_lista(int *estado, t_lista *l){
 	if(lista_vazia(l))
 		return 0;
 	
 	l->atual = l->ini->prox->prox;
 	
-	*item = l->ini->prox->u.estado;
+	*estado = l->ini->prox->u.estado;
 
 	l->ini->prox->prev = NULL;
 	l->ini->prox->prox = NULL;
@@ -155,13 +155,13 @@ int remove_inicio_lista(int *item, t_lista *l){
 	return 1;
 }
 
-int remove_fim_lista(int *item, t_lista *l){
+int remove_fim_lista(int *estado, t_lista *l){
 	if(lista_vazia(l))
 		return 0;
 
 	l->atual = l->fim->prev->prev;
 
-	*item = l->fim->prev->u.estado;
+	*estado = l->fim->prev->u.estado;
 
 	l->fim->prev->prev = NULL;
 	l->fim->prev->prox = NULL;
@@ -176,7 +176,7 @@ int remove_fim_lista(int *item, t_lista *l){
 	return 1;
 }
 
-int remove_item_lista(int chave, int *item, t_lista *l){
+int remove_item_lista(int chave, int *estado, t_lista *l){
 	if(lista_vazia(l))
 		return 0;
 
@@ -188,7 +188,7 @@ int remove_item_lista(int chave, int *item, t_lista *l){
 	if(l->atual->prox == NULL)
 		return 0;
 	
-	*item = l->atual->u.estado;
+	*estado = l->atual->u.estado;
 	l->atual->prev->prox = l->atual->prox;
 	l->atual->prox->prev = l->atual->prev;
 	free(l->atual);
