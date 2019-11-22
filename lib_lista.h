@@ -17,7 +17,7 @@ struct t_nodo {
 
 	int spr_alt;
 	int alterna;
-	char corpo[2][3][6];
+	char corpo[2][3][7];
 };
 
 typedef struct t_nodo t_nodo;

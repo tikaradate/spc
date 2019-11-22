@@ -21,6 +21,7 @@
 #define CANHAO   300
 #define TIRO     400
 #define BOMBA    500
+#define NAVE_M	 600
 
 #define ESQUE -1
 #define DIREI  1
@@ -123,11 +124,20 @@ void inicia_sprite(t_nodo *item){
 			strcpy(item->corpo[0][0], "*");
 			strcpy(item->corpo[1][0], "0");
 			break;
+		case NAVE_M:
+			item->spr_alt = 3;
+			strcpy(item->corpo[0][0], "AaAaAa");
+			strcpy(item->corpo[0][1], "aAaAaA");
+			strcpy(item->corpo[0][2], "AaAaAa");
+			strcpy(item->corpo[1][0], "aAaAaA");
+			strcpy(item->corpo[1][1], "AaAaAa");
+			strcpy(item->corpo[1][2], "aAaAaA");
+			break;	
 	}
 }
 
 void desenha_barreiras(t_lista *barreiras){
-	int i, j, k;
+	int i, j;
 
 	inicializa_atual_inicio(barreiras);
 	for(i = 0; i < barreiras->tamanho; i++){
@@ -158,7 +168,7 @@ void desenha_aliens(t_lista *aliens){
 	}
 }
 
-void move_aliens(int *direcao, t_lista *aliens, t_lista *bombas){
+void move_aliens(int *velocidade, int *direcao, t_lista *aliens, t_lista *bombas){
 	int vert, i, j, r;
 	t_coord pos_bomba;
 
@@ -167,10 +177,12 @@ void move_aliens(int *direcao, t_lista *aliens, t_lista *bombas){
 	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1< 0){
 		*direcao = DIREI;  /* inverte sentido do movimento horizontal */
 		vert = BAIXO;
+		*velocidade -= 5;
 	} 
 	else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X - 5){
 		*direcao = ESQUE;
 		vert = BAIXO;
+		*velocidade -= 5;
 	}
 
 	for(i = 0; i < aliens->tamanho; i++){
@@ -247,7 +259,7 @@ void move_tiro(t_lista *tiro){
 		inicializa_atual_inicio(tiro);
 		for(i = 0; i < tiro->tamanho; i++){
 			move_item(CIMA, tiro->atual);
-			incrementa_atual(tiro);
+				incrementa_atual(tiro);
 		}
 		inicializa_atual_fim(tiro);
 		if(tiro->atual->pos.y < 0)
@@ -257,15 +269,33 @@ void move_tiro(t_lista *tiro){
 
 void move_bombas(t_lista *bombas){
 	if(!lista_vazia(bombas)){
-		int i, aux;
+		int i;
 
 		inicializa_atual_inicio(bombas);
 		for(i = 0; i < bombas->tamanho; i++){
 			move_item(BAIXO, bombas->atual);
-			if(bombas->atual->pos.y > MIN_Y)
+			if(bombas->atual->pos.y + 1 > MIN_Y)
 				bombas->atual->u.estado = MORTO;
 			incrementa_atual(bombas);
 		}
+	}
+}
+
+void move_nave_mae(t_lista *nave_mae){
+	int r;
+	t_coord pos;
+	if(lista_vazia(nave_mae)){
+		pos.x = 1;
+		pos.y = 1;
+		r = rand()%100;
+		if(r > 50){
+			insere_fim_lista(VIVO, NAVE_M, pos, nave_mae);
+			inicia_sprite(nave_mae->ini->prox);
+		}
+	
+	} else {
+		inicializa_atual_inicio(nave_mae);
+		move_item(DIREI, nave_mae->atual);
 	}
 }
 
@@ -273,6 +303,9 @@ void inicializa_bombas(t_lista *bombas){
 	inicializa_lista(bombas);	
 }
 
+void inicializa_nave_mae(t_lista *nave_mae){
+	inicializa_lista(nave_mae);
+}
 void inicializa_canhao(t_lista *canhao){
 	t_coord pos;
 
@@ -284,9 +317,16 @@ void inicializa_canhao(t_lista *canhao){
 }
 
 void desenha_canhao(t_lista *canhao){
-	desenha_item(canhao->ini->prox);
+	inicializa_atual_inicio(canhao);
+	desenha_item(canhao->atual);
 }
 
+void desenha_nave_mae(t_lista *nave_mae){
+	if(!lista_vazia(nave_mae)){
+		inicializa_atual_inicio(nave_mae);
+		desenha_item(nave_mae->atual);
+	}
+}
 void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 	int tecla;
 	t_coord pos_tiro;
@@ -318,7 +358,7 @@ void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 	}
 }
 
-void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas, t_lista *canhao){
+void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas, t_lista *canhao, t_lista *nave_mae){
 	int i, j, k;
 
 	inicializa_atual_inicio(tiro);
@@ -499,18 +539,29 @@ void remove_aliens(t_lista *aliens){
 		remove_fim_lista(&lixo, aliens);
 }
 
-
-void remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas){
+int remove_nave_mae(t_lista *nave_mae){
+	int lixo;
+	
+	if(!lista_vazia(nave_mae)){
+		inicializa_atual_inicio(nave_mae);
+		if(nave_mae->atual->u.estado == MORTO)
+			remove_item_atual(&lixo, nave_mae);
+		
+		return 50;
+	}
+}
+int remove_morto(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){
 	remove_tiro(tiro);
 	remove_aliens(aliens);
 	remove_barreiras(barreiras);
 	remove_bombas(bombas);
+	remove_nave_mae(nave_mae);
 }
 
 int main() {
 	int x_term, y_term;
-	int dir, cont, tecla;
-	t_lista aliens, canhao, tiro, barreiras, bombas;
+	int dir, cont, v_alien;
+	t_lista aliens, canhao, tiro, barreiras, bombas, nave_mae;
 	WINDOW *tela_tecla;
 
 	initscr();              /* inicia a tela */
@@ -531,26 +582,33 @@ int main() {
 	srand(time(NULL));
 	inicializa_aliens(&aliens);
 	inicializa_canhao(&canhao);
+	inicializa_nave_mae(&nave_mae);
 	inicializa_tiro(&tiro);
 	inicializa_bombas(&bombas);
 	inicializa_barreiras(&barreiras);
 	dir = DIREI;
+	v_alien = 150;
 	cont = 0;
 	while(1){
 
 		erase();
 		move_canhao(&canhao, &tiro, tela_tecla);
-		if(cont % 15 == 0){
-			move_aliens(&dir, &aliens, &bombas);
+		if(cont % v_alien == 0){
+			move_aliens(&v_alien, &dir, &aliens, &bombas);
 		}
-		if(cont % 2 == 0){
+		if(cont % 20 == 0){
 			move_tiro(&tiro);
+		}
+		if(cont % 500 == 0){
 			move_bombas(&bombas);
+		}
+		if(cont % 75 == 0){
+			move_nave_mae(&nave_mae);
 		}
 
 			
-		detecta_colisoes(&tiro, &aliens, &barreiras, &bombas, &canhao);
-		remove_morto(&tiro, &aliens, &barreiras, &bombas);
+		detecta_colisoes(&tiro, &aliens, &barreiras, &bombas, &canhao, &nave_mae);
+		remove_morto(&tiro, &aliens, &barreiras, &bombas, &nave_mae);
 		
 		desenha_tiro(&tiro);
 		desenha_bombas(&bombas);
@@ -558,6 +616,7 @@ int main() {
 		desenha_canhao(&canhao);
 		desenha_aliens(&aliens);
 		desenha_barreiras(&barreiras);
+		desenha_nave_mae(&nave_mae);
 
 		if(canhao.ini->prox->u.estado == MORTO){
 			endwin();
@@ -566,8 +625,11 @@ int main() {
 		}
 		refresh();
 
-		cont = (cont + 1) % 100;
-		usleep(20000);
+		if(cont > 1000)
+			cont = 0;
+		cont++;
+
+		usleep(500);
 	}
 }
 
