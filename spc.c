@@ -16,12 +16,14 @@
 #define MIN_Y  38
 #define MIN_X 100
 
-#define ALIEN    100
-#define BARREIRA 200
-#define CANHAO   300
-#define TIRO     400
-#define BOMBA    500
-#define NAVE_M	 600
+#define ALIEN1    100
+#define ALIEN2	  101
+#define ALIEN3	  102
+#define BARREIRA  200
+#define CANHAO    300
+#define TIRO      400
+#define BOMBA     500
+#define NAVE_M	  600
 
 #define ESQUE -1
 #define DIREI  1
@@ -38,6 +40,28 @@
 #define COR_ALIEN    14
 #define COR_BOMBA	 15
 #define COR_N_MAE	 16
+
+#define ALIEN1_11 "\\-/"
+#define ALIEN1_12 "iii"
+#define ALIEN1_13 ";;;"
+#define ALIEN1_21 "\\-/"
+#define ALIEN1_22 "IiI"
+#define ALIEN1_23 ";-;"
+
+#define ALIEN1_11 "\\-/"
+#define ALIEN1_12 "iii"
+#define ALIEN1_13 ";;;"
+#define ALIEN1_21 "\\-/"
+#define ALIEN1_22 "IiI"
+#define ALIEN1_23 ";-;"
+
+#define ALIEN1_11 "\\-/"
+#define ALIEN1_12 "iii"
+#define ALIEN1_13 ";;;"
+#define ALIEN1_21 "\\-/"
+#define ALIEN1_22 "IiI"
+#define ALIEN1_23 ";-;"
+
 
 void desenha_item(t_nodo *);
 void inicia_sprite(t_nodo *);
@@ -60,7 +84,7 @@ void inicializa_aliens(t_lista *aliens){
 
 		pos.y = 5;
 		for(j = 0; j < ALI_LIN; j++){
-			insere_fim_lista(VIVO, ALIEN, pos, aliens->atual->u.col);
+			insere_fim_lista(VIVO, ALIEN1, pos, aliens->atual->u.col);
 			inicia_sprite(aliens->atual->u.col->fim->prev);
 			pos.y += 4; 
 		}
@@ -102,14 +126,32 @@ void desenha_item(t_nodo *item){
 void inicia_sprite(t_nodo *item){
 	item->alterna = 0;
 	switch(item->tipo){
-		case ALIEN:
+		case ALIEN1:
 			item->spr_alt = 3;
-			strcpy(item->corpo[0][0], "a a a");
-			strcpy(item->corpo[0][1], " A A");
-			strcpy(item->corpo[0][2], "AA AA");
-			strcpy(item->corpo[1][0], "c c c");
-			strcpy(item->corpo[1][1], " - -");
-			strcpy(item->corpo[1][2], "A= =A");
+			strcpy(item->corpo[0][0], ALIEN1_11);
+			strcpy(item->corpo[0][1], ALIEN1_12);
+			strcpy(item->corpo[0][2], ALIEN1_13);
+			strcpy(item->corpo[1][0], ALIEN1_21);
+			strcpy(item->corpo[1][1], ALIEN1_22);
+			strcpy(item->corpo[1][2], ALIEN1_23);
+			break;
+		case ALIEN2:
+			item->spr_alt = 3;
+			strcpy(item->corpo[0][0], ALIEN1_11);
+			strcpy(item->corpo[0][1], ALIEN1_12);
+			strcpy(item->corpo[0][2], ALIEN1_13);
+			strcpy(item->corpo[1][0], ALIEN1_21);
+			strcpy(item->corpo[1][1], ALIEN1_22);
+			strcpy(item->corpo[1][2], ALIEN1_23);
+			break;
+		case ALIEN2:
+			item->spr_alt = 3;
+			strcpy(item->corpo[0][0], ALIEN1_11);
+			strcpy(item->corpo[0][1], ALIEN1_12);
+			strcpy(item->corpo[0][2], ALIEN1_13);
+			strcpy(item->corpo[1][0], ALIEN1_21);
+			strcpy(item->corpo[1][1], ALIEN1_22);
+			strcpy(item->corpo[1][2], ALIEN1_23);
 			break;
 		case CANHAO:
 			item->spr_alt = 2;
@@ -309,7 +351,7 @@ void move_nave_mae(t_lista *nave_mae){
 		pos.x = 1;
 		pos.y = 1;
 		r = rand()%100;
-		if(r > 50){
+		if(r > 95){
 			insere_fim_lista(VIVO, NAVE_M, pos, nave_mae);
 			inicia_sprite(nave_mae->ini->prox);
 		}
@@ -393,8 +435,9 @@ void move_canhao(t_lista *canhao, t_lista *tiro, WINDOW *tela_tecla){
 }
 
 void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_lista *bombas, t_lista *canhao, t_lista *nave_mae){
-	int i, j, k;
+	int i, j, k, l;
 
+/* tiro com aliens */
 	inicializa_atual_inicio(tiro);
 	for(i = 0; i < tiro->tamanho; i++){
 
@@ -490,6 +533,33 @@ void detecta_colisoes(t_lista *tiro, t_lista *aliens, t_lista *barreiras, t_list
 		}
 		incrementa_atual(bombas);
 	}
+/* aliens com barreira */
+
+	inicializa_atual_inicio(barreiras);
+	for(i = 0; i < barreiras->tamanho; i++){
+
+		inicializa_atual_inicio(barreiras->atual->u.col);
+		for(j = 0; j < barreiras->atual->u.col->tamanho; j++){
+
+			inicializa_atual_inicio(aliens);
+			for(k = 0; k < aliens->tamanho; k++){
+
+				inicializa_atual_inicio(aliens->atual->u.col);
+				for(l = 0; l < aliens->atual->u.col->tamanho; l++){
+					if(barreiras->atual->u.col->atual->pos.x >= aliens->atual->u.col->atual->pos.x &&
+						barreiras->atual->u.col->atual->pos.x <= aliens->atual->u.col->atual->pos.x + 4 &&
+						barreiras->atual->u.col->atual->pos.y >= aliens->atual->u.col->atual->pos.y &&
+						barreiras->atual->u.col->atual->pos.y <= aliens->atual->u.col->atual->pos.y + 2){
+						barreiras->atual->u.col->atual->u.estado = MORTO;
+					}
+					incrementa_atual(aliens->atual->u.col);
+				}
+				incrementa_atual(aliens);
+			}
+			incrementa_atual(barreiras->atual->u.col);
+		}
+		incrementa_atual(barreiras);
+	}
 }
 
 int remove_bombas(t_lista *bombas){
@@ -506,8 +576,7 @@ int remove_bombas(t_lista *bombas){
 			score += 2;
 		} else {
 			incrementa_atual(bombas);
-		}
-	}
+		}}
 
 	return score;
 }
@@ -626,12 +695,12 @@ int main() {
 		return 0;
 	}
 
-	cbreak();               /* desabilita o buffer de entrada */
-	noecho();               /* não mostra os caracteres digitados */
+	cbreak();               		/* desabilita o buffer de entrada */
+	noecho();               		/* não mostra os caracteres digitados */
 	tela_tecla = newwin(0, 0, 0, 0);
-	nodelay(tela_tecla, TRUE);  /* faz com que getch não aguarde a digitação */
-	keypad(tela_tecla, TRUE);   /* permite a leitura das setas */
-	curs_set(FALSE);        /* não mostra o cursor na tela */
+	nodelay(tela_tecla, TRUE);  	/* faz com que getch não aguarde a digitação */
+	keypad(tela_tecla, TRUE);   	/* permite a leitura das setas */
+	curs_set(FALSE);        		/* não mostra o cursor na tela */
 
 	start_color();
 	init_color(COLOR_BLACK, 0, 0, 0);
@@ -640,10 +709,10 @@ int main() {
 	init_color(COR_BARREIRA, 200, 1000, 500);
 	init_color(COR_ALIEN, 1000, 320, 200);
 	init_color(COR_BOMBA, 1000, 800, 200);
-	init_color(COR_N_MAE, 1000, 250, 200);
+	init_color(COR_N_MAE, 1000, 200, 200);
 	init_pair(1, COR_CANHAO, COLOR_BLACK);
 	init_pair(2, COR_TIRO, COLOR_BLACK);
-	init_pair(3, COR_BARREIRA, COR_BARREIRA);
+	init_pair(3, COR_BARREIRA, COLOR_BLACK);
 	init_pair(4, COR_ALIEN, COLOR_BLACK);
 	init_pair(5, COR_BOMBA, COLOR_BLACK);
 	init_pair(6, COR_N_MAE, COLOR_BLACK);
