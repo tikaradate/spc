@@ -1,3 +1,6 @@
+#ifndef __LIB_LISTA__
+#define __LIB_LISTA__
+
 struct t_coord {
 	int x;
 	int y;
@@ -135,3 +138,5 @@ int consulta_item_atual(int *item, t_lista *atual);
   Retorna 1 se houve sucesso e zero caso contrário.
 */
 int remove_item_atual(int *item, t_lista *l);
+
+#endif
