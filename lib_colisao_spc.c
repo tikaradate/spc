@@ -8,8 +8,8 @@ void detecta_colisoes(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista 
 	colisao_bombas_barreiras(bombas, barreiras);
 	colisao_canhao_bombas(canhao, bombas);
 	colisao_aliens_barreiras(aliens, barreiras);
+	colisao_aliens_chao(aliens, canhao);
 }
-
 
 void colisao_aliens_tiros(t_lista *aliens, t_lista *tiros){
 	int i, j, k;
@@ -138,7 +138,7 @@ void colisao_aliens_barreiras(t_lista *aliens, t_lista *barreiras){
 				inicializa_atual_inicio(aliens->atual->u.col);
 				for(l = 0; l < aliens->atual->u.col->tamanho; l++){
 					if(barreiras->atual->u.col->atual->pos.x >= aliens->atual->u.col->atual->pos.x &&
-						barreiras->atual->u.col->atual->pos.x <= aliens->atual->u.col->atual->pos.x + 3 &&
+						barreiras->atual->u.col->atual->pos.x <= aliens->atual->u.col->atual->pos.x + 4 &&
 						barreiras->atual->u.col->atual->pos.y >= aliens->atual->u.col->atual->pos.y &&
 						barreiras->atual->u.col->atual->pos.y <= aliens->atual->u.col->atual->pos.y + 2){
 						barreiras->atual->u.col->atual->u.estado = MORTO;
@@ -164,10 +164,24 @@ void colisao_tiros_nave_mae(t_lista *tiros, t_lista *nave_mae){
 				tiros->atual->pos.x <= nave_mae->atual->pos.x + 5&&
 				tiros->atual->pos.y >= nave_mae->atual->pos.y &&
 				tiros->atual->pos.y <= nave_mae->atual->pos.y + 3){
+				
 				tiros->atual->u.estado = MORTO;
 				nave_mae->atual->u.estado = MORRENDO;
 			}
 			incrementa_atual(tiros);
 		}
+	}
+}
+
+void colisao_aliens_chao(t_lista *aliens, t_lista *canhao){
+	int i;
+
+	inicializa_atual_inicio(aliens);
+	for(i = 0; i < aliens->tamanho; i++){
+		inicializa_atual_fim(aliens->atual->u.col);
+		/* ao chegar na altura do canhao, o jogo acaba */
+		if(aliens->atual->u.col->atual->pos.y + 2 == MIN_Y - 2)
+			canhao->atual->u.estado = MORTO;
+		incrementa_atual(aliens);
 	}
 }

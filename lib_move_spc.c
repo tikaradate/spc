@@ -1,13 +1,13 @@
 #include <stdlib.h>
+#include "lib_controle_spc.h"
 #include "lib_move_spc.h"
-#include "lib_ini_spc.h"
 
 void move_item(int sentido, t_nodo *item){
 	switch(sentido){
 		case DIREITA:
 			item->pos.x++;
 			break;
-		case ESQUE:
+		case ESQUERDA:
 			item->pos.x--;
 			break;
 		case BAIXO:
@@ -22,16 +22,16 @@ void move_aliens(int *velocidade, int *direcao, t_lista *aliens, t_lista *bombas
 	int vert, i, j;
 
 	inicializa_atual_inicio(aliens);
-	vert = 0;
-	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1< 0){
-		*direcao = DIREITA;  /* inverte sentido do movimento horizontal */
+	vert = NEUTRO;
+	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1 < 0){
+		*direcao = DIREITA; 
 		vert = BAIXO;
 		if(*velocidade - 7 > 0){
 			*velocidade -= 7;
 		}
 	} 
-		else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > 100 - 5){
-		*direcao = ESQUE;
+		else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X - 5){
+		*direcao = ESQUERDA;
 		vert = BAIXO;
 		if(*velocidade - 7 > 0){
 			*velocidade -= 7;
@@ -51,12 +51,12 @@ void move_aliens(int *velocidade, int *direcao, t_lista *aliens, t_lista *bombas
 	}
 }
 
-void move_canhao(t_lista *canhao, t_lista *tiro, int tecla){
+void move_canhao(t_lista *canhao, t_lista *tiros, int tecla){
 	
 	inicializa_atual_inicio(canhao);
 	if(tecla == KEY_LEFT || tecla == 'a'){
 		if(canhao->atual->pos.x > 0){
-			move_item(ESQUE, canhao->atual);
+			move_item(ESQUERDA, canhao->atual);
 			alterna_sprite(canhao->atual);
 		}
  	} else if(tecla == KEY_RIGHT || tecla == 'd'){
@@ -64,29 +64,29 @@ void move_canhao(t_lista *canhao, t_lista *tiro, int tecla){
 			move_item(DIREITA, canhao->atual);
 			alterna_sprite(canhao->atual);
 		}
-	} else if(tecla == ' ' || tecla == KEY_UP){
-		novo_tiro(tiro, canhao->atual->pos);
+	} else if(tecla == KEY_UP || tecla == ' '){
+		novo_tiro(tiros, canhao->atual->pos);
 	}
 }
 
-void move_tiro(t_lista *tiro){
-	if(!lista_vazia(tiro)){
-		int i, aux;
+void move_tiro(t_lista *tiros){
+	if(!lista_vazia(tiros)){
+		int i;
 
-		inicializa_atual_inicio(tiro);
-		for(i = 0; i < tiro->tamanho; i++){
-			if(tiro->atual->pos.y - 1 < 0){
-				tiro->atual->u.estado = MORTO;
+		inicializa_atual_inicio(tiros);
+		for(i = 0; i < tiros->tamanho; i++){
+			if(tiros->atual->pos.y - 1 < 0){
+				tiros->atual->u.estado = MORTO;
 			} else {
-				move_item(CIMA, tiro->atual);
-				alterna_sprite(tiro->atual);
+				move_item(CIMA, tiros->atual);
+				alterna_sprite(tiros->atual);
 			}
-			incrementa_atual(tiro);
+			incrementa_atual(tiros);
 		}
 	}
 }
 
-void move_bombas(t_lista *bombas){
+void move_bomba(t_lista *bombas){
 	if(!lista_vazia(bombas)){
 		int i;
 
@@ -124,3 +124,21 @@ void move_nave_mae(t_lista *nave_mae){
 		}
 	}
 }
+
+void movimentacao(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *bombas, t_lista *nave_mae, int cont, int *dir, int *v_alien, int tecla){
+	move_canhao(canhao, tiros, tecla);
+
+	if(cont % *v_alien == 0){
+		move_aliens(v_alien, dir, aliens, bombas);
+	}
+	if(cont % V_TIRO == 0){
+		move_tiro(tiros);
+	}
+	if(cont % V_BOMBA == 0){
+		move_bomba(bombas);
+	}
+	if(cont % V_NAVE_M == 0){
+		move_nave_mae(nave_mae);
+	}
+}
+

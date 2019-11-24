@@ -101,10 +101,10 @@ int insere_fim_lista(int estado, int tipo, t_coord pos, t_lista *l){
 }
 
 int insere_ordenado_lista(int estado, int tipo, t_coord pos, t_lista *l){
-	if(lista_vazia(l))
-		return(insere_inicio_lista(estado, tipo, pos, l));
-			
 	t_nodo *novo;
+
+	if(lista_vazia(l))
+		return(insere_inicio_lista(estado, tipo, pos, l));	
 
 	novo = (t_nodo *) malloc(1 * sizeof(t_nodo));
 	if(novo == NULL)

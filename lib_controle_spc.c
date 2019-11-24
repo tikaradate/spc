@@ -1,9 +1,40 @@
 #include <stdio.h>
+#include <time.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lib_ini_spc.h"
+#include "lib_controle_spc.h"
 #include "lib_lista.h"
+
+int inicia_ncurses(WINDOW **tela_tecla){
+	int y_term, x_term;
+
+	initscr();              		/* inicia a tela */
+	
+	getmaxyx(stdscr, y_term, x_term);
+	if(y_term < MIN_Y || x_term < MIN_X){
+		endwin();
+		printf("Tamanho do terminal insuficiente\nTente pelo menos 38x100\n");
+		return 0;
+	}
+
+	cbreak();               		/* desabilita o buffer de entrada */
+	noecho();               		/* não mostra os caracteres digitados */
+	*tela_tecla = newwin(0, 0, 0, 0);/* nova tela para o wgetch, pois getch atrapalha no refresh */
+	nodelay(*tela_tecla, TRUE);  	/* faz com que wgetch não aguarde a digitação */
+	keypad(*tela_tecla, TRUE);   	/* permite a leitura das setas */
+	curs_set(FALSE); 	      		/* não mostra o cursor na tela */
+	return 1;
+}
+
+void inicia_parametros(int *dir, int *v_alien, int *cont, int *score, int *vitorias){
+	srand(time(NULL));
+	*dir = DIREITA;
+	*v_alien = V_ALIEN_INI;
+	*cont = 0;
+	*score = 0;
+	*vitorias = 0;
+}
 
 void inicia_cores(){
 	start_color();
@@ -14,18 +45,20 @@ void inicia_cores(){
 	init_color(COR_ALIEN, 1000, 320, 200);
 	init_color(COR_BOMBA, 1000, 800, 200);
 	init_color(COR_N_MAE, 1000, 200, 200);
+	init_color(COR_APAGOU, 500, 500, 500);
 	init_pair(1, COR_CANHAO, COLOR_BLACK);
 	init_pair(2, COR_TIRO, COLOR_BLACK);
 	init_pair(3, COR_BARREIRA, COLOR_BLACK);
 	init_pair(4, COR_ALIEN, COLOR_BLACK);
 	init_pair(5, COR_BOMBA, COLOR_BLACK);
 	init_pair(6, COR_N_MAE, COLOR_BLACK);
+	init_pair(7, COR_APAGOU, COLOR_BLACK);
 }
-void inicia_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiro, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){	
+void inicia_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){	
 	inicializa_aliens(aliens);
 	inicializa_canhao(canhao);
 	inicializa_nave_mae(nave_mae);
-	inicializa_tiro(tiro);
+	inicializa_tiros(tiros);
 	inicializa_bombas(bombas);
 	inicializa_barreiras(barreiras);
 }
@@ -67,8 +100,8 @@ void inicializa_canhao(t_lista *canhao){
 	inicia_sprite(canhao->ini->prox);
 }
 
-void inicializa_tiro(t_lista *tiro){
-	inicializa_lista(tiro);
+void inicializa_tiros(t_lista *tiros){
+	inicializa_lista(tiros);
 }
 
 void inicializa_barreiras(t_lista *barreiras){
@@ -135,46 +168,45 @@ void inicia_sprite(t_nodo *item){
 			break;
 		case CANHAO:
 			item->spr_alt = 2;
-			strcpy(item->corpo[0][0], " vVv ");
-			strcpy(item->corpo[0][1], "bnnnd");
-			strcpy(item->corpo[1][0], " VvV ");
-			strcpy(item->corpo[1][1], "pmmmq");
+			strcpy(item->corpo[0][0], CANHAO_11);
+			strcpy(item->corpo[0][1], CANHAO_12);
+			strcpy(item->corpo[1][0], CANHAO_21);
+			strcpy(item->corpo[1][1], CANHAO_22);
 			break;
 		case TIRO:
 			item->spr_alt = 1;
-			strcpy(item->corpo[0][0], ";");
-			strcpy(item->corpo[1][0], "i");
+			strcpy(item->corpo[0][0], TIRO_1);
+			strcpy(item->corpo[1][0], TIRO_2);
 			break;
 		case BARREIRA:
 			item->spr_alt = 1;
-			strcpy(item->corpo[0][0], "a");
+			strcpy(item->corpo[0][0], BARREIRA_1);
 			break;
 		case BOMBA:
 			item->spr_alt = 1;
-			strcpy(item->corpo[0][0], "*");
-			strcpy(item->corpo[1][0], "0");
+			strcpy(item->corpo[0][0], BOMBA_1);
 			break;
 		case NAVE_M:
 			item->spr_alt = 3;
-			strcpy(item->corpo[0][0], "AaAaAa");
-			strcpy(item->corpo[0][1], "aAaAaA");
-			strcpy(item->corpo[0][2], "AaAaAa");
-			strcpy(item->corpo[1][0], "aAaAaA");
-			strcpy(item->corpo[1][1], "AaAaAa");
-			strcpy(item->corpo[1][2], "aAaAaA");
+			strcpy(item->corpo[0][0], NAVE_M_11);
+			strcpy(item->corpo[0][1], NAVE_M_12);
+			strcpy(item->corpo[0][2], NAVE_M_13);
+			strcpy(item->corpo[1][0], NAVE_M_21);
+			strcpy(item->corpo[1][1], NAVE_M_22);
+			strcpy(item->corpo[1][2], NAVE_M_23);
 			break;	
 	}
 }
 
-void novo_tiro(t_lista *tiro, t_coord pos_canhao){
-	t_coord pos_tiro;
+void novo_tiro(t_lista *tiros, t_coord pos_canhao){
+	t_coord pos_tiros;
 
-	if(tiro->tamanho < MAX_TIROS){
-		pos_tiro.x = pos_canhao.x + 2;
-		pos_tiro.y = pos_canhao.y - 1;
-		insere_fim_lista(VIVO, TIRO, pos_tiro, tiro);
-		inicializa_atual_fim(tiro);
-		inicia_sprite(tiro->atual);
+	if(tiros->tamanho < MAX_TIROS){
+		pos_tiros.x = pos_canhao.x + 2;
+		pos_tiros.y = pos_canhao.y - 1;
+		insere_fim_lista(VIVO, TIRO, pos_tiros, tiros);
+		inicializa_atual_fim(tiros);
+		inicia_sprite(tiros->atual);
 	}
 }
 
@@ -195,6 +227,40 @@ void nova_bomba(t_lista *bombas, t_coord pos_alien){
 void alterna_sprite(t_nodo *item){
 	if(item->alterna == 1)
 		item->alterna = 0;
-	else
+	else if (item->alterna == 0)
 		item->alterna = 1;
+}
+
+int ganhou_rodada(t_lista *aliens){
+	return(aliens->tamanho == 0);
+}
+
+int fim_de_jogo(t_lista *canhao, int tecla){
+	inicializa_atual_inicio(canhao);
+	if(canhao->atual->u.estado == MORTO || tecla == 'q'){
+		return 1;
+	}
+	return 0;
+}
+
+void termina_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){
+	int i;
+	
+	inicializa_atual_inicio(aliens);
+	for(i = 0; i < aliens->tamanho; i++){
+		destroi_lista(aliens->atual->u.col);
+		incrementa_atual(aliens);
+	}
+	destroi_lista(aliens);
+
+	inicializa_atual_inicio(barreiras);
+	for(i = 0; i < barreiras->tamanho; i++){
+		destroi_lista(barreiras->atual->u.col);
+		incrementa_atual(barreiras);
+	}
+	destroi_lista(barreiras);
+	destroi_lista(canhao);
+	destroi_lista(tiros);
+	destroi_lista(bombas);
+	destroi_lista(nave_mae);
 }

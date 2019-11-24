@@ -1,10 +1,10 @@
-#include "lib_rmv_spc.h"
+#include "lib_remove_spc.h"
 
-int remove_morto(t_lista *aliens, t_lista *tiro, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){
+int remove_morto(t_lista *aliens, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){
 	int score;
 
 	score = 0;
-	remove_tiro(tiro);
+	remove_tiros(tiros);
 	remove_barreiras(barreiras);
 	
 	score += remove_aliens(aliens);
@@ -21,31 +21,31 @@ int remove_bombas(t_lista *bombas){
 	score = 0;
 	inicializa_atual_inicio(bombas);
 	for(i = 0; i < bombas->tamanho; i++){
-		if(bombas->atual->u.estado == MORRENDO || bombas->atual->u.estado == MORTO){
+		if(bombas->atual->u.estado == MORTO){
 			aux = bombas->atual->prox;
 			remove_item_atual(&lixo, bombas);
 			bombas->atual = aux;
-			if(bombas->atual->u.estado == MORRENDO)
-				score += 2;
-		} else {
-			incrementa_atual(bombas);
+		} else if(bombas->atual->u.estado == MORRENDO){
+			score += 2;
+			bombas->atual->u.estado = MORTO;
 		}
+			incrementa_atual(bombas);
 	}
 	return score;
 }
 
-void remove_tiro(t_lista *tiro){
+void remove_tiros(t_lista *tiros){
 	int i, lixo;
 	t_nodo *aux;
 
-	inicializa_atual_inicio(tiro);
-	for(i = 0; i < tiro->tamanho; i++){
-		if(tiro->atual->u.estado == MORTO){
-			aux = tiro->atual->prox;
-			remove_item_atual(&lixo, tiro);
-			tiro->atual = aux;
+	inicializa_atual_inicio(tiros);
+	for(i = 0; i < tiros->tamanho; i++){
+		if(tiros->atual->u.estado == MORTO){
+			aux = tiros->atual->prox;
+			remove_item_atual(&lixo, tiros);
+			tiros->atual = aux;
 		} else {
-			incrementa_atual(tiro);
+			incrementa_atual(tiros);
 		}
 	}	
 }
@@ -81,13 +81,13 @@ int remove_aliens(t_lista *aliens){
 
 		inicializa_atual_inicio(aliens->atual->u.col);
 		for(j = 0; j < aliens->atual->u.col->tamanho; j++){
-			if(aliens->atual->u.col->atual->u.estado == MORRENDO ||
-			   aliens->atual->u.col->atual->u.estado == MORTO){
+			if(aliens->atual->u.col->atual->u.estado == MORTO){
 				aux = aliens->atual->u.col->atual->prox;
 				remove_item_atual(&lixo, aliens->atual->u.col);
 				aliens->atual->u.col->atual = aux;
-				if(aliens->atual->u.col->atual->u.estado == MORRENDO)
-					score += 10;
+			} else if(aliens->atual->u.col->atual->u.estado == MORRENDO){
+				score += 10;
+				aliens->atual->u.col->atual->u.estado = MORTO;
 			} else {
 				incrementa_atual(aliens->atual->u.col);
 			}
@@ -117,11 +117,12 @@ int remove_nave_mae(t_lista *nave_mae){
 	
 	if(!lista_vazia(nave_mae)){
 		inicializa_atual_inicio(nave_mae);
-		if(nave_mae->atual->u.estado == MORRENDO || nave_mae->atual->u.estado == MORTO){
+		if(nave_mae->atual->u.estado == MORTO)
 			remove_item_atual(&lixo, nave_mae);
-			if(nave_mae->atual->u.estado == MORRENDO)
-				return 50;
-			}
+		else if(nave_mae->atual->u.estado == MORRENDO){
+			nave_mae->atual->u.estado = MORTO;
+			return 50;
+		}
 	}
 	return 0;
 }

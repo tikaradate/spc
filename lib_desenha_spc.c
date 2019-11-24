@@ -1,5 +1,5 @@
-#include <curses.h>
-#include "lib_draw_spc.h"
+#include <ncurses.h>
+#include "lib_desenha_spc.h"
 
 void desenha_item(t_nodo *item){
 	int i;
@@ -29,30 +29,27 @@ void desenha_barreiras(t_lista *barreiras){
 void desenha_aliens(t_lista *aliens){
 	int i, j;
 
-	attron(COLOR_PAIR(4));
+	attron(COLOR_PAIR(4));	
 	inicializa_atual_inicio(aliens);
 	for(i = 0; i < aliens->tamanho; i++){
+		
 		inicializa_atual_inicio(aliens->atual->u.col);	
-		for(j = 0; j < aliens->atual->u.col->tamanho; j++){
-			if(aliens->atual->u.col->atual->u.estado == VIVO){
-				desenha_item(aliens->atual->u.col->atual);
-				incrementa_atual(aliens->atual->u.col);
-			}
+		for(j = 0; j < aliens->atual->u.col->tamanho; j++){	
+			desenha_item(aliens->atual->u.col->atual);
+			incrementa_atual(aliens->atual->u.col);
 		}
 		incrementa_atual(aliens);
 	}
 	attroff(COLOR_PAIR(4));
 }
-void desenha_tiro(t_lista *tiro){
+void desenha_tiros(t_lista *tiros){
 	int i;
 	
 	attron(COLOR_PAIR(2));
-	inicializa_atual_inicio(tiro);
-	for(i = 0; i < tiro->tamanho; i++){
-		if(tiro->atual->u.estado == VIVO){
-			desenha_item(tiro->atual);
-			incrementa_atual(tiro);
-		}
+	inicializa_atual_inicio(tiros);
+	for(i = 0; i < tiros->tamanho; i++){
+		desenha_item(tiros->atual);
+		incrementa_atual(tiros);
 	}
 	attroff(COLOR_PAIR(2));
 }
@@ -60,13 +57,11 @@ void desenha_tiro(t_lista *tiro){
 void desenha_bombas(t_lista *bombas){
 	int i;
 
-	attron(COLOR_PAIR(5));
+	attron(COLOR_PAIR(5));	
 	inicializa_atual_inicio(bombas);
 	for(i = 0; i < bombas->tamanho; i++){
-		if(bombas->atual->u.estado == VIVO){
-			desenha_item(bombas->atual);
-			incrementa_atual(bombas);
-		}
+		desenha_item(bombas->atual);
+		incrementa_atual(bombas);
 	}
 	attroff(COLOR_PAIR(5));
 }
@@ -74,16 +69,15 @@ void desenha_bombas(t_lista *bombas){
 void desenha_canhao(t_lista *canhao){
 	inicializa_atual_inicio(canhao);
 	attron(COLOR_PAIR(1));
-	desenha_item(canhao->atual);
+	desenha_item(canhao->atual);	
 	attroff(COLOR_PAIR(1));
 }
 
 void desenha_nave_mae(t_lista *nave_mae){
 	if(!lista_vazia(nave_mae)){
 		inicializa_atual_inicio(nave_mae);
-		attron(COLOR_PAIR(6));
+		attron(COLOR_PAIR(6));	
 		desenha_item(nave_mae->atual);
 		attroff(COLOR_PAIR(6));
 	}
 }
-
