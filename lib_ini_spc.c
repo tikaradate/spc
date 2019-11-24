@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <curses.h>
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include "lib_ini_spc.h"
@@ -164,4 +164,37 @@ void inicia_sprite(t_nodo *item){
 			strcpy(item->corpo[1][2], "aAaAaA");
 			break;	
 	}
+}
+
+void novo_tiro(t_lista *tiro, t_coord pos_canhao){
+	t_coord pos_tiro;
+
+	if(tiro->tamanho < MAX_TIROS){
+		pos_tiro.x = pos_canhao.x + 2;
+		pos_tiro.y = pos_canhao.y - 1;
+		insere_fim_lista(VIVO, TIRO, pos_tiro, tiro);
+		inicializa_atual_fim(tiro);
+		inicia_sprite(tiro->atual);
+	}
+}
+
+void nova_bomba(t_lista *bombas, t_coord pos_alien){
+	int r;
+	t_coord pos_bomba;
+
+	r = rand() % 20;
+	if((r > 18) && (bombas->tamanho < MAX_BOMBAS)){
+		pos_bomba.x = pos_alien.x + 2;
+		pos_bomba.y = pos_alien.y + 3;
+		insere_fim_lista(VIVO, BOMBA, pos_bomba, bombas);
+		inicializa_atual_fim(bombas);
+		inicia_sprite(bombas->atual);
+	}
+}
+
+void alterna_sprite(t_nodo *item){
+	if(item->alterna == 1)
+		item->alterna = 0;
+	else
+		item->alterna = 1;
 }

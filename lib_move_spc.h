@@ -7,7 +7,7 @@
 #define CIMA  -2
 
 #ifndef VIVO
-#define VIVO 1
+#define VIVO 2
 #endif
 
 #ifndef MORTO

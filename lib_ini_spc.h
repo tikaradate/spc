@@ -1,3 +1,6 @@
+#ifndef __LIB_LISTA_INI__
+#define __LIB_LISTA_INI__
+
 #include "lib_lista.h"
 
 #define ALIEN1    100
@@ -48,6 +51,9 @@
 #define BAR_LARG 7
 #define QNT_BAR  4
 
+#define MAX_BOMBAS 10
+#define MAX_TIROS   3
+
 void inicia_cores();
 
 void inicia_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiro, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae);
@@ -65,3 +71,10 @@ void inicializa_bombas(t_lista *bombas);
 void inicializa_nave_mae(t_lista *nave_mae);
 
 void inicia_sprite(t_nodo *item);
+
+void novo_tiro(t_lista *tiro, t_coord pos);
+
+void nova_bomba(t_lista *bombas, t_coord pos);
+
+void alterna_sprite(t_nodo *item);
+#endif
