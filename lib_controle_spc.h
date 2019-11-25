@@ -32,14 +32,13 @@
 #define COR_ALIEN    14
 #define COR_BOMBA    15
 #define COR_N_MAE    16
-#define COR_APAGOU 17
 
 #define ALIEN1_11 "  s  "
 #define ALIEN1_12 " iii "
-#define ALIEN1_13 "-ix;-"
+#define ALIEN1_13 "-ixi-"
 #define ALIEN1_21 "  z  "
-#define ALIEN1_22 " ;;i "
-#define ALIEN1_23 "-i+;-"
+#define ALIEN1_22 " iii "
+#define ALIEN1_23 "-;*;-"
 
 #define ALIEN2_11 " --- "
 #define ALIEN2_12 " -0- "
@@ -84,6 +83,8 @@
 #define DIREITA 1
 
 #define V_ALIEN_INI 200
+
+#define BOMBA_CHANCE 38
 
 int inicia_ncurses(WINDOW **);
 

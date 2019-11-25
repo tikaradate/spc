@@ -34,7 +34,7 @@ int main() {
 			vitorias++;
 			termina_jogo(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
 			inicia_jogo(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
-			v_alien = V_ALIEN_INI - (vitorias * 15);
+			v_alien = V_ALIEN_INI - (vitorias * 20);
 		}
 
 		movimentacao(&aliens, &canhao, &tiros, &bombas, &nave_mae, cont, &dir, &v_alien, tecla);	

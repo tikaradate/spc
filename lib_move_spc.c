@@ -113,7 +113,7 @@ void move_nave_mae(t_lista *nave_mae){
 		pos.x = 1;
 		pos.y = 1;
 		r = rand() % 200 + 1;
-		if(r > 197){
+		if(r > NAVE_M_CHANCE){
 			insere_fim_lista(VIVO, NAVE_M, pos, nave_mae);
 			inicializa_atual_inicio(nave_mae);
 			inicia_sprite(nave_mae->atual);

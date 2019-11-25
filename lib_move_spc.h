@@ -36,6 +36,8 @@
 #define MIN_X 100
 #endif
 
+#define NAVE_M_CHANCE 197
+
 void move_item(int sentido, t_nodo *item);
 
 void move_aliens(int *velocidade, int *direcao, t_lista *aliens, t_lista *bombas);

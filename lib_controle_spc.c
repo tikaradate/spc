@@ -219,8 +219,8 @@ void nova_bomba(t_lista *bombas, t_coord pos_alien){
 	int r;
 	t_coord pos_bomba;
 
-	r = rand() % 20;
-	if((r > 18) && (bombas->tamanho < MAX_BOMBAS)){
+	r = rand() % 40;
+	if((r > BOMBA_CHANCE) && (bombas->tamanho < MAX_BOMBAS)){
 	/* posicao da bomba defasada para sair do local correto do alien */
 		pos_bomba.x = pos_alien.x + 2;
 		pos_bomba.y = pos_alien.y + 3;
