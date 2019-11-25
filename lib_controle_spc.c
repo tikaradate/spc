@@ -9,7 +9,7 @@
 int inicia_ncurses(WINDOW **tela_tecla){
 	int y_term, x_term;
 
-	initscr();              		/* inicia a tela */
+	initscr();	/* inicia a tela */
 	
 	getmaxyx(stdscr, y_term, x_term);
 	if(y_term < MIN_Y || x_term < MIN_X){
@@ -18,12 +18,12 @@ int inicia_ncurses(WINDOW **tela_tecla){
 		return 0;
 	}
 
-	cbreak();               		/* desabilita o buffer de entrada */
-	noecho();               		/* não mostra os caracteres digitados */
+	cbreak();               		 /* desabilita o buffer de entrada */
+	noecho();               		 /* não mostra os caracteres digitados */
 	*tela_tecla = newwin(0, 0, 0, 0);/* nova tela para o wgetch, pois getch atrapalha no refresh */
-	nodelay(*tela_tecla, TRUE);  	/* faz com que wgetch não aguarde a digitação */
-	keypad(*tela_tecla, TRUE);   	/* permite a leitura das setas */
-	curs_set(FALSE); 	      		/* não mostra o cursor na tela */
+	nodelay(*tela_tecla, TRUE);  	 /* faz com que wgetch não aguarde a digitação */
+	keypad(*tela_tecla, TRUE);   	 /* permite a leitura das setas */
+	curs_set(FALSE); 	      		 /* não mostra o cursor na tela */
 	return 1;
 }
 
@@ -45,14 +45,12 @@ void inicia_cores(){
 	init_color(COR_ALIEN, 1000, 320, 200);
 	init_color(COR_BOMBA, 1000, 800, 200);
 	init_color(COR_N_MAE, 1000, 200, 200);
-	init_color(COR_APAGOU, 500, 500, 500);
 	init_pair(1, COR_CANHAO, COLOR_BLACK);
 	init_pair(2, COR_TIRO, COLOR_BLACK);
 	init_pair(3, COR_BARREIRA, COLOR_BLACK);
 	init_pair(4, COR_ALIEN, COLOR_BLACK);
 	init_pair(5, COR_BOMBA, COLOR_BLACK);
 	init_pair(6, COR_N_MAE, COLOR_BLACK);
-	init_pair(7, COR_APAGOU, COLOR_BLACK);
 }
 void inicia_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){	
 	inicializa_aliens(aliens);
@@ -62,21 +60,25 @@ void inicia_jogo(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barr
 	inicializa_bombas(bombas);
 	inicializa_barreiras(barreiras);
 }
+
+/* os aliens sao controlados por uma lista de listas */
 void inicializa_aliens(t_lista *aliens){
 	int i, j;
 	t_coord pos;
 
 	inicializa_lista(aliens);
 
+/* aliens inseridos coluna a coluna, com a posicao correta */
 	pos.x = 5;
 	for(i = 0; i < ALI_COL; i++){
 		insere_fim_lista(0, 0, pos, aliens);
 		inicializa_atual_fim(aliens);
 		aliens->atual->u.col = (t_lista *) malloc(sizeof(t_lista));
-		inicializa_lista(aliens->atual->u.col);
 
+		inicializa_lista(aliens->atual->u.col);
 		pos.y = 5;
 		for(j = 0; j < ALI_LIN; j++){
+			/* alien diferente dependendo da linha */
 			if(j == 0)
 				insere_fim_lista(VIVO, ALIEN1, pos, aliens->atual->u.col);
 			else if(j == 1 || j == 2)
@@ -93,8 +95,8 @@ void inicializa_aliens(t_lista *aliens){
 void inicializa_canhao(t_lista *canhao){
 	t_coord pos;
 
-	pos.x = 48;
-	pos.y = 36;
+	pos.x = CAN_INI_X;
+	pos.y = CAN_INI_Y;
 	inicializa_lista(canhao);
 	insere_fim_lista(VIVO, CANHAO, pos, canhao);
 	inicia_sprite(canhao->ini->prox);
@@ -104,6 +106,8 @@ void inicializa_tiros(t_lista *tiros){
 	inicializa_lista(tiros);
 }
 
+/* as barreiras sao dadas por uma lista de listas,
+ na qual cada nodo eh um caracter da barreira */
 void inicializa_barreiras(t_lista *barreiras){
 	int i, j, k;
 	t_coord pos;
@@ -202,6 +206,7 @@ void novo_tiro(t_lista *tiros, t_coord pos_canhao){
 	t_coord pos_tiros;
 
 	if(tiros->tamanho < MAX_TIROS){
+	/* posicao do tiro defasada para sair do local correto do canhao */
 		pos_tiros.x = pos_canhao.x + 2;
 		pos_tiros.y = pos_canhao.y - 1;
 		insere_fim_lista(VIVO, TIRO, pos_tiros, tiros);
@@ -216,6 +221,7 @@ void nova_bomba(t_lista *bombas, t_coord pos_alien){
 
 	r = rand() % 20;
 	if((r > 18) && (bombas->tamanho < MAX_BOMBAS)){
+	/* posicao da bomba defasada para sair do local correto do alien */
 		pos_bomba.x = pos_alien.x + 2;
 		pos_bomba.y = pos_alien.y + 3;
 		insere_fim_lista(VIVO, BOMBA, pos_bomba, bombas);
@@ -227,7 +233,7 @@ void nova_bomba(t_lista *bombas, t_coord pos_alien){
 void alterna_sprite(t_nodo *item){
 	if(item->alterna == 1)
 		item->alterna = 0;
-	else if (item->alterna == 0)
+	else
 		item->alterna = 1;
 }
 

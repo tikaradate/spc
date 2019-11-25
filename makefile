@@ -1,5 +1,5 @@
 
-CC_FLAGS = -ansi -Wall -Wextra -pedantic
+CC_FLAGS = -ansi -Wall -Wextra -pedantic -g
 
 CC = gcc
 

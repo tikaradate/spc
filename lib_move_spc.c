@@ -23,14 +23,19 @@ void move_aliens(int *velocidade, int *direcao, t_lista *aliens, t_lista *bombas
 
 	inicializa_atual_inicio(aliens);
 	vert = NEUTRO;
-	if(aliens->ini->prox->u.col->ini->prox->pos.x - 1 < 0){
+
+/* checa se os aliens bateram na borda da direita ou da esquerda
+utilizando-se da lista de listas, onde uma lista vazia eh retirada
+de tal forma que atualiza a primeira e ultima coluna */
+
+	if(aliens->ini->prox->u.col->ini->prox->pos.x - 2 < 0){
 		*direcao = DIREITA; 
 		vert = BAIXO;
 		if(*velocidade - 7 > 0){
 			*velocidade -= 7;
 		}
 	} 
-		else if(aliens->fim->prev->u.col->ini->prox->pos.x + 1 > MIN_X - 5){
+		else if(aliens->fim->prev->u.col->ini->prox->pos.x + 2 > MIN_X - 5){
 		*direcao = ESQUERDA;
 		vert = BAIXO;
 		if(*velocidade - 7 > 0){
@@ -75,7 +80,7 @@ void move_tiro(t_lista *tiros){
 
 		inicializa_atual_inicio(tiros);
 		for(i = 0; i < tiros->tamanho; i++){
-			if(tiros->atual->pos.y - 1 < 0){
+			if(tiros->atual->pos.y - 2 < 0){
 				tiros->atual->u.estado = MORTO;
 			} else {
 				move_item(CIMA, tiros->atual);
@@ -107,8 +112,8 @@ void move_nave_mae(t_lista *nave_mae){
 	if(lista_vazia(nave_mae)){
 		pos.x = 1;
 		pos.y = 1;
-		r = rand() % 100 + 1;
-		if(r > 99){
+		r = rand() % 200 + 1;
+		if(r > 197){
 			insere_fim_lista(VIVO, NAVE_M, pos, nave_mae);
 			inicializa_atual_inicio(nave_mae);
 			inicia_sprite(nave_mae->atual);
@@ -116,7 +121,7 @@ void move_nave_mae(t_lista *nave_mae){
 	
 	} else {
 		inicializa_atual_inicio(nave_mae);
-		if(nave_mae->atual->pos.x + 6 > 100){
+		if(nave_mae->atual->pos.x + 7 > 100){
 			nave_mae->atual->u.estado = MORTO;
 		} else {
 			move_item(DIREITA, nave_mae->atual);
@@ -125,6 +130,7 @@ void move_nave_mae(t_lista *nave_mae){
 	}
 }
 
+/* velocidade calculada com o mod de certos numeros, desta forma apenas movendo em tempos especificos */
 void movimentacao(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *bombas, t_lista *nave_mae, int cont, int *dir, int *v_alien, int tecla){
 	move_canhao(canhao, tiros, tecla);
 

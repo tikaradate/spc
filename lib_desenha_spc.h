@@ -12,6 +12,10 @@
 #define MORTO 0
 #endif
 
+void desenha(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae, int *score);
+
+void desenha_borda();
+
 void desenha_item(t_nodo *item);
 
 void desenha_aliens(t_lista *aliens);

@@ -20,6 +20,9 @@
 #define MIN_X 100
 #define MIN_Y  38
 
+#define CAN_INI_X 48
+#define CAN_INI_Y 36
+
 #define ALI_COL 11
 #define ALI_LIN  5
 
@@ -75,7 +78,7 @@
 #define BAR_LARG 7
 #define QNT_BAR  4
 
-#define MAX_BOMBAS 10
+#define MAX_BOMBAS  8
 #define MAX_TIROS   3
 
 #define DIREITA 1

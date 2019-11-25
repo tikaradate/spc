@@ -1,6 +1,30 @@
 #include <ncurses.h>
 #include "lib_desenha_spc.h"
 
+/* attron e attroff usados para colorir diferentes objetos de diferentes cores */
+
+void desenha(t_lista *aliens, t_lista *canhao, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae, int *score){
+	desenha_borda();
+	mvprintw(0, 45, "%010d", *score);
+	desenha_tiros(tiros);
+	desenha_aliens(aliens);
+	desenha_canhao(canhao);
+	desenha_barreiras(barreiras);
+	desenha_bombas(bombas);
+	desenha_nave_mae(nave_mae);	
+}
+
+void desenha_borda(){
+	mvaddch(0, 0, ACS_ULCORNER);
+	mvaddch(38, 0, ACS_LLCORNER);
+	mvaddch(0, 100, ACS_URCORNER);
+	mvaddch(38, 100, ACS_LRCORNER);		
+	mvhline(0, 1, ACS_HLINE, 99);
+	mvhline(38, 1, ACS_HLINE, 99);
+	mvvline(1, 0, ACS_VLINE, 37);
+	mvvline(1, 100, ACS_VLINE,37);
+}
+
 void desenha_item(t_nodo *item){
 	int i;
 	for(i = 0; i < item->spr_alt; i++){

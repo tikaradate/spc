@@ -24,9 +24,12 @@ int main() {
 	inicia_jogo(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
 	inicia_parametros(&dir, &v_alien, &cont, &score, &vitorias);
 
+/* loop principal */
 	while(1){
 
 		erase();
+		tecla = wgetch(tela_tecla);
+		
 		if(ganhou_rodada(&aliens)){
 			vitorias++;
 			termina_jogo(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
@@ -34,22 +37,14 @@ int main() {
 			v_alien = V_ALIEN_INI - (vitorias * 15);
 		}
 
-		tecla = wgetch(tela_tecla);
-		movimentacao(&aliens, &canhao, &tiros, &bombas, &nave_mae, cont, &dir, &v_alien, tecla);
-			
-		detecta_colisoes(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
-		score += remove_morto(&aliens, &tiros, &barreiras, &bombas, &nave_mae);
-		mvprintw(0, 45, "%010d", score);
-		desenha_tiros(&tiros);
-		desenha_bombas(&bombas);
-		desenha_barreiras(&barreiras);
-		desenha_canhao(&canhao);
-		desenha_aliens(&aliens);
-		desenha_barreiras(&barreiras);
-		desenha_nave_mae(&nave_mae);
+		movimentacao(&aliens, &canhao, &tiros, &bombas, &nave_mae, cont, &dir, &v_alien, tecla);	
 		
-		refresh();
-
+		detecta_colisoes(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
+		
+		score += remove_morto(&aliens, &tiros, &barreiras, &bombas, &nave_mae);
+		
+		desenha(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae, &score);
+	
 		if(fim_de_jogo(&canhao, tecla)){
 			endwin();
 			termina_jogo(&aliens, &canhao, &tiros, &barreiras, &bombas, &nave_mae);
@@ -62,6 +57,7 @@ int main() {
 			cont = 0;
 		cont++;
 
+		refresh();
 		usleep(500);
 	}
 

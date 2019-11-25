@@ -1,5 +1,7 @@
 #include "lib_remove_spc.h"
 
+/* o estado morrendo eh usado para contar os pontos adequadamente */
+
 int remove_morto(t_lista *aliens, t_lista *tiros, t_lista *barreiras, t_lista *bombas, t_lista *nave_mae){
 	int score;
 
@@ -96,6 +98,7 @@ int remove_aliens(t_lista *aliens){
 		incrementa_atual(aliens);
 	}
 
+/* remove a lista do comeco ou do fim se estiverem vazias */
 	if(aliens->tamanho != 0){
 		if(aliens->ini->prox->u.col->tamanho == 0){
 			destroi_lista(aliens->ini->prox->u.col);
@@ -116,9 +119,11 @@ int remove_nave_mae(t_lista *nave_mae){
 	int lixo;
 	
 	if(!lista_vazia(nave_mae)){
+
 		inicializa_atual_inicio(nave_mae);
 		if(nave_mae->atual->u.estado == MORTO)
 			remove_item_atual(&lixo, nave_mae);
+
 		else if(nave_mae->atual->u.estado == MORRENDO){
 			nave_mae->atual->u.estado = MORTO;
 			return 50;
